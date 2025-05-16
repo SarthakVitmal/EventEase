@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import {Button} from "../components/ui/button"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -123,12 +124,12 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <button
+              <Button
                 type="submit"
                 className="w-full px-4 py-2 text-white font-medium rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all"
               >
                 Login
-              </button>
+              </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">

@@ -7,21 +7,21 @@ const events = [
     "description": "India's largest student-run tech event with 100+ talks and workshops.",
     "date": "May 25, 2025",
     "location": "IIT Bombay, Mumbai",
-    "image": "https://source.unsplash.com/featured/?tech,conference"
+    "image": "https://plus.unsplash.com/premium_photo-1661306437817-8ab34be91e0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     "title": "Comedy Night Live",
     "description": "Stand-up comedy special with top Indian comedians.",
     "date": "June 10, 2025",
     "location": "Juhu Theatre, Mumbai",
-    "image": "https://source.unsplash.com/featured/?comedy,show"
+    "image": "https://plus.unsplash.com/premium_photo-1661306437817-8ab34be91e0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     "title": "Bollywood Beats Festival",
     "description": "Celebrate music, dance and fun with top DJs and artists.",
     "date": "July 15, 2025",
     "location": "Andheri Stadium, Mumbai",
-    "image": "https://source.unsplash.com/featured/?music,festival"
+    "image": "https://plus.unsplash.com/premium_photo-1661306437817-8ab34be91e0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   }
 ]
 
