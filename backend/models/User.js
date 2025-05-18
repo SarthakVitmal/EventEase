@@ -15,12 +15,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    mobile: {
+    mobileNumber: {
         type: String,
         required: true,
         unique: true,
     },
-    dob:{
+    dateOfBirth:{
         type: Date,
         required: true,
     },

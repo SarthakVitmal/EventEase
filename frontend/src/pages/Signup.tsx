@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { authApi } from "../lib/api";
 
 export default function SignUpPage() {
   const [dateOfBirth, setDateOfBirth] = useState<string>("") // Changed to string for <input type="date">
@@ -20,6 +21,8 @@ export default function SignUpPage() {
     mobileNumber: "",
     dateOfBirth: "",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -90,13 +93,32 @@ export default function SignUpPage() {
     return valid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError("");
+    
     if (validateForm()) {
-      console.log("Form submitted", { ...formData, dateOfBirth })
-      // Redirect to login or dashboard
+      setIsSubmitting(true);
+      try {
+        const userData = {
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          mobileNumber: formData.mobileNumber,
+          dateOfBirth: dateOfBirth,
+        };
+        
+        await authApi.signup(userData);
+        
+      
+      } catch (error:any) {
+        console.error("Signup error:", error);
+        setSubmitError(error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
-  }
+  };
 
   return (
     <div className="mx-auto container font-[Montserrat] flex min-h-screen flex-col">

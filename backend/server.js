@@ -1,27 +1,45 @@
 import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import authRoutes from './routes/authRoutes.js';
 
+// Load environment variables
 dotenv.config();
-const app = express();
 
-app.use(cors());
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// CORS middleware configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend origin
+  credentials: true, // Important for cookies/auth
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 5000;
+// Routes - Note: We're mounting on /auth not /api/auth to match your frontend request
+app.use('/auth', authRoutes);
 
-
+// Basic route for testing
 app.get('/', (req, res) => {
-  res.send('Backend is running');
-})
+  res.send('EventEase API is running');
+});
 
-mongoose.connect(process.env.MONGODB_URI, {
-})
-.then(() => {
-  app.listen(PORT, () => {console.log(`Server is running on port ${PORT}`);});
-})
-.catch((error) => {
-  console.error('MongoDB connection error:', error);
+// Connect to MongoDB
+try {
+  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/eventease')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
+} catch (error) {
+  console.error('Failed to connect to MongoDB:', error);
+}
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
