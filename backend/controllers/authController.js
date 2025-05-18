@@ -74,13 +74,13 @@ export const login = async (req, res) => {
     );
 
     // Return success (without sensitive data)
-    // Set token as HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600000, 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 3600000,
+      path: '/',
     });
-
     res.status(200).json({
       message: 'Login successful',
       userId: user._id,
@@ -92,7 +92,54 @@ export const login = async (req, res) => {
   }
 }
 
-export const logout = (req, res) => {
-  res.clearCookie('token');
-  res.status(200).json({ message: 'Logout successful' });
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/'
+    });
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Logout failed' });
+  }
+};
+
+export const getUserFromToken = async (req, res) => {
+  try {
+    console.log("Request received for /auth/getUser");
+    console.log("Cookies:", req.cookies);
+    console.log("Headers:", req.headers);
+    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    console.log("Token:", token);
+    if (!token) {
+      console.log("No token provided");
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    let decoded;
+    try {
+      console.log("Verifying token with JWT_SECRET:", process.env.JWT_SECRET);
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("Decoded token:", decoded);
+    } catch (err) {
+      console.error("Token verification failed:", err.message);
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    const user = await User.findById(decoded.userId).select("-password");
+    console.log("User query result:", user);
+    if (!user) {
+      console.log("User not found for ID:", decoded.userId);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("Returning user data");
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error in getUserFromToken:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

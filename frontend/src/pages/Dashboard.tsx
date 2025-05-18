@@ -1,93 +1,117 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { Calendar, Clock, MapPin, LogOut, Plus, Search } from 'lucide-react'
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { Calendar, Clock, MapPin, LogOut, Plus, Search } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import api from "../lib/api";
 
-// Sample user data
-const user = {
-  name: "Rahul Sharma",
-  email: "rahul.sharma@example.com",
-  avatar: "/placeholder.svg?height=40&width=40",
+interface User {
+  name: string;
+  avatar?: string;
 }
 
-// Sample events data
-const upcomingEvents = [
-  {
-    id: "1",
-    title: "Startup Pitch Night",
-    date: "2025-06-01T18:00:00",
-    location: "WeWork, BKC, Mumbai",
-    image: "https://images.unsplash.com/photo-1468359601543-843bfaef291a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbmNlcnR8ZW58MHx8MHx8fDA%3D",
-  },
-  {
-    id: "2",
-    title: "React Developers Meetup",
-    date: "2025-06-05T16:00:00",
-    location: "91Springboard, Pune",
-    image: "https://images.unsplash.com/photo-1468359601543-843bfaef291a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbmNlcnR8ZW58MHx8MHx8fDA%3D",
-  },
-]
-
-// Sample past events
-const pastEvents = [
-  {
-    id: "3",
-    title: "Design Systems Workshop",
-    date: "2025-05-15T10:00:00",
-    location: "The Hive, Bandra, Mumbai",
-    image: "https://source.unsplash.com/featured/?design,workshop",
-  },
-  {
-    id: "4",
-    title: "Product Management Conference",
-    date: "2025-05-10T09:00:00",
-    location: "Taj Lands End, Mumbai",
-    image: "https://images.unsplash.com/photo-1522158637959-30385a09e0da?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-]
-
-// Sample recommended events
-const recommendedEvents = [
-  {
-    id: "5",
-    title: "AI in Healthcare Summit",
-    date: "2025-06-20T09:00:00",
-    location: "JW Marriott, Juhu, Mumbai",
-    image: "https://images.unsplash.com/photo-1522158637959-30385a09e0da?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-  {
-    id: "6",
-    title: "Blockchain Developer Conference",
-    date: "2025-06-25T10:00:00",
-    location: "Grand Hyatt, Mumbai",
-    image: "https://images.unsplash.com/photo-1522158637959-30385a09e0da?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-  {
-    id: "7",
-    title: "Digital Marketing Masterclass",
-    date: "2025-07-05T11:00:00",
-    location: "Radisson Blu, Andheri, Mumbai",
-    image: "https://images.unsplash.com/photo-1522158637959-30385a09e0da?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-]
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  image?: string;
+}
 
 export default function DashboardPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [recommendedEvents, setRecommendedEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const formatEventDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return format(date, "MMMM d, yyyy")
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch user details
+        const userResponse = await api.get("/auth/getUser");
+        setUser(userResponse.data.user); // Adjusted to match getUserFromToken response
+
+        // // Fetch events
+        // const eventsResponse = await api.get("/api/user/events");
+        // setUpcomingEvents(eventsResponse.data.upcomingEvents || []);
+        // setPastEvents(eventsResponse.data.pastEvents || []);
+        // setRecommendedEvents(eventsResponse.data.recommendedEvents || []);
+      } catch (err: any) {
+        console.error("Error fetching data:", err);
+        if (err.response?.status === 401) {
+          setError("Unauthorized. Please log in again.");
+          // router.push("/login");
+        } else {
+          setError(err.message || "Failed to load dashboard data.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+      
+    } catch (err) {
+      console.error("Logout failed:", err);
+      setError("Failed to log out. Please try again.");
+    }
+  };
+
+  const formatEventDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) throw new Error("Invalid date");
+      return format(date, "MMMM d, yyyy");
+    } catch {
+      return "Invalid date";
+    }
+  };
+
+  const formatEventTime = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) throw new Error("Invalid date");
+      return format(date, "h:mm a");
+    } catch {
+      return "Invalid time";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
-  const formatEventTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return format(date, "h:mm a")
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-500">Error loading dashboard</h2>
+          <p className="mt-2">{error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -95,73 +119,28 @@ export default function DashboardPage() {
       {/* Header/Navbar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              EventEase
-            </span>
-          </a>
-          <nav className="hidden md:flex gap-6">
-            <a href="/dashboard" className="text-sm font-medium transition-colors hover:text-primary">
-              Dashboard
-            </a>
-            <a
-              href="/my-events"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              My Events
-            </a>
-            <a
-              href="/dashboard/create-event"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              Create Event
-            </a>
-          </nav>
           <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search events..."
-                className="w-[200px] pl-8 md:w-[300px] rounded-full bg-background"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <h1 className="text-xl font-bold">Event Dashboard</h1>
+          </div>
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Avatar>
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
+                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
               </Avatar>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-sm font-medium">{user?.name || "User"}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground"
+              onClick={handleLogout}
+            >
               <LogOut className="h-5 w-5" />
               <span className="sr-only">Log out</span>
             </Button>
-          </div>
-          <div className="flex md:hidden">
-            <button className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6"
-              >
-                <line x1="4" x2="20" y1="12" y2="12"></line>
-                <line x1="4" x2="20" y1="6" y2="6"></line>
-                <line x1="4" x2="20" y1="18" y2="18"></line>
-              </svg>
-              <span className="sr-only">Toggle menu</span>
-            </button>
           </div>
         </div>
       </header>
@@ -172,13 +151,18 @@ export default function DashboardPage() {
           <section className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user.name}</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Welcome back, {user?.name || "User"}
+                </h1>
                 <p className="text-muted-foreground mt-1">
                   Here's what's happening with your events and recommendations for you.
                 </p>
               </div>
               <div className="mt-4 md:mt-0">
-                <Button asChild className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                <Button
+                  asChild
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
                   <a href="/dashboard/create-event">
                     <Plus className="mr-2 h-4 w-4" /> Create New Event
                   </a>
@@ -208,7 +192,7 @@ export default function DashboardPage() {
               <TabsTrigger value="past">Past Events</TabsTrigger>
               <TabsTrigger value="recommended">Recommended</TabsTrigger>
             </TabsList>
-            
+
             {/* Upcoming Events Tab */}
             <TabsContent value="upcoming">
               <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -239,7 +223,9 @@ export default function DashboardPage() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">Manage</Button>
+                      <Button variant="outline" className="w-full">
+                        Manage
+                      </Button>
                     </CardFooter>
                   </Card>
                 ))}
@@ -254,12 +240,12 @@ export default function DashboardPage() {
                     You don't have any upcoming events. Create one or browse events to join.
                   </p>
                   <Button asChild>
-                    <a href="/create-event">Create Event</a>
+                    <a href="/dashboard/create-event">Create Event</a>
                   </Button>
                 </div>
               )}
             </TabsContent>
-            
+
             {/* Past Events Tab */}
             <TabsContent value="past">
               <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -290,13 +276,23 @@ export default function DashboardPage() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">View Details</Button>
+                      <Button variant="outline" className="w-full">
+                        View Details
+                      </Button>
                     </CardFooter>
                   </Card>
                 ))}
               </div>
+              {pastEvents.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <h3 className="text-lg font-medium">No past events</h3>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">
+                    You haven't attended any events yet.
+                  </p>
+                </div>
+              )}
             </TabsContent>
-            
+
             {/* Recommended Events Tab */}
             <TabsContent value="recommended">
               <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -327,11 +323,21 @@ export default function DashboardPage() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">Register</Button>
+                      <Button variant="outline" className="w-full">
+                        Register
+                      </Button>
                     </CardFooter>
                   </Card>
                 ))}
               </div>
+              {recommendedEvents.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <h3 className="text-lg font-medium">No recommended events</h3>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">
+                    We don't have any event recommendations for you yet.
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
@@ -431,5 +437,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

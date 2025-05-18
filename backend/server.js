@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 5000;
 
 // CORS middleware configuration
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend origin
-  credentials: true, // Important for cookies/auth
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -22,10 +22,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes - Note: We're mounting on /auth not /api/auth to match your frontend request
 app.use('/auth', authRoutes);
 
-// Basic route for testing
 app.get('/', (req, res) => {
   res.send('EventEase API is running');
 });
