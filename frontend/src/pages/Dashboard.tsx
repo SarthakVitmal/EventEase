@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import api from "../lib/api";
 
 interface User {
-  name: string;
+  username: string;
   avatar?: string;
 }
 
@@ -125,11 +125,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Avatar>
-                <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
-                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.username} />
+                <AvatarFallback>{user?.username?.charAt(0) || "U"}</AvatarFallback>
               </Avatar>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">{user?.name || "User"}</p>
+                <p className="text-sm font-medium">{user?.username || "User"}</p>
               </div>
             </div>
             <Button
@@ -152,7 +152,7 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                  Welcome back, {user?.name || "User"}
+                  Welcome back, {user?.username || "User"}
                 </h1>
                 <p className="text-muted-foreground mt-1">
                   Here's what's happening with your events and recommendations for you.
