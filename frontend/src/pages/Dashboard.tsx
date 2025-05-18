@@ -13,6 +13,7 @@ import api from "../lib/api";
 interface User {
   username: string;
   avatar?: string;
+  email?: string;
 }
 
 interface Event {
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [recommendedEvents, setRecommendedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,18 +41,35 @@ export default function DashboardPage() {
 
         // Fetch user details
         const userResponse = await api.get("/auth/getUser");
-        setUser(userResponse.data.user); // Adjusted to match getUserFromToken response
+        setUser(userResponse.data.user);
 
-        // // Fetch events
-        // const eventsResponse = await api.get("/api/user/events");
-        // setUpcomingEvents(eventsResponse.data.upcomingEvents || []);
-        // setPastEvents(eventsResponse.data.pastEvents || []);
-        // setRecommendedEvents(eventsResponse.data.recommendedEvents || []);
+        // Fetch events
+        const eventsResponse = await api.get("/events/getEventsByUser");
+        const events: Event[] = eventsResponse.data;
+
+        // Classify events based on date
+        const currentDate = new Date();
+        const upcoming: Event[] = [];
+        const past: Event[] = [];
+
+        events.forEach((event) => {
+          const eventDate = new Date(event.date);
+          if (eventDate >= currentDate) {
+            upcoming.push(event);
+          } else {
+            past.push(event);
+          }
+        });
+
+        setAllEvents(events);
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+        setRecommendedEvents(events); // Placeholder: adjust as needed
+
       } catch (err: any) {
         console.error("Error fetching data:", err);
         if (err.response?.status === 401) {
           setError("Unauthorized. Please log in again.");
-          // router.push("/login");
         } else {
           setError(err.message || "Failed to load dashboard data.");
         }
@@ -121,6 +140,17 @@ export default function DashboardPage() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold">Event Dashboard</h1>
+            <nav className="hidden md:flex gap-6">
+              <a href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
+                Dashboard
+              </a>
+              <a href="/dashboard/all-events" className="text-sm font-medium text-muted-foreground hover:text-primary">
+                All Events
+              </a>
+              <a href="/dashboard/create-event" className="text-sm font-medium text-muted-foreground hover:text-primary">
+                Create Event
+              </a>
+            </nav>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -190,6 +220,7 @@ export default function DashboardPage() {
             <TabsList className="mb-4">
               <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
               <TabsTrigger value="past">Past Events</TabsTrigger>
+              <TabsTrigger value="all">All Events</TabsTrigger>
               <TabsTrigger value="recommended">Recommended</TabsTrigger>
             </TabsList>
 
@@ -293,6 +324,59 @@ export default function DashboardPage() {
               )}
             </TabsContent>
 
+            {/* All Events Tab */}
+            <TabsContent value="all">
+              <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {allEvents.map((event) => (
+                  <Card key={event.id} className="overflow-hidden transition-all hover:shadow-lg">
+                    <div className="aspect-video w-full overflow-hidden">
+                      <img
+                        src={event.image || "/placeholder.svg"}
+                        alt={event.title}
+                        className="h-full w-full object-cover transition-transform hover:scale-105"
+                      />
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{event.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center text-sm text-muted-foreground mb-2">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatEventDate(event.date)}
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground mb-2">
+                        <Clock className="mr-2 h-4 w-4" />
+                        {formatEventTime(event.date)}
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        {event.location}
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="outline" className="w-full">
+                        {new Date(event.date) >= new Date() ? "Manage" : "View Details"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+              {allEvents.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="rounded-full bg-purple-100 p-3 mb-4">
+                    <Calendar className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-medium">No events</h3>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">
+                    You don't have any events. Create one or browse events to join.
+                  </p>
+                  <Button asChild>
+                    <a href="/dashboard/create-event">Create Event</a>
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
             {/* Recommended Events Tab */}
             <TabsContent value="recommended">
               <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -362,7 +446,7 @@ export default function DashboardPage() {
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">4</div>
+                  <div className="text-2xl font-bold">{allEvents.length}</div>
                   <p className="text-xs text-muted-foreground">+2 from last month</p>
                 </CardContent>
               </Card>
@@ -385,7 +469,7 @@ export default function DashboardPage() {
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">2</div>
+                  <div className="text-2xl font-bold">{upcomingEvents.length}</div>
                   <p className="text-xs text-muted-foreground">+1 from last month</p>
                 </CardContent>
               </Card>

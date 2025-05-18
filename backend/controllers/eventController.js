@@ -1,6 +1,6 @@
 import Event from '../models/Event.js';
 
-export const createEvent = async (req, res) => {
+const createEvent = async (req, res) => {
   try {
     // Verify request has body
     if (!req.body) {
@@ -99,5 +99,16 @@ export const createEvent = async (req, res) => {
     });
   }
 };
+
+
+export const getEventsByUser = async (req, res) => {
+    try {
+        const events = await Event.find().populate('creator', 'username email');
+        res.status(200).json(events);
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
 export default createEvent;
