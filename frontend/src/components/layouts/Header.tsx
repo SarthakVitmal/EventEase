@@ -1,34 +1,42 @@
+import {Ticket} from 'lucide-react'
 export default function Header() {
   return (
     // Sticky Header
-      <header className="container mx-auto sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="flex justify-center sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">EventEase</span>
-          </a>
-          <nav className="hidden md:flex gap-6">
-            <a href="/" className="text-sm font-medium transition-colors hover:text-primary">
-              Home
-            </a>
-            <a href="#events" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+          <div className="flex items-center gap-2">
+            <Ticket className="h-6 w-6 text-purple-600" />
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+              EventEase
+            </span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="#events" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Events
             </a>
-            <a href="/login" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Login
+            <a href="#features" className="text-sm font-medium hover:text-purple-600 transition-colors">
+              Features
             </a>
-            <a href="/signup" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Sign Up
+            <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
+              Pricing
+            </a>
+            <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
+              About
             </a>
           </nav>
-          <div className="flex md:hidden">
-            <button className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                <line x1="4" x2="20" y1="12" y2="12"></line>
-                <line x1="4" x2="20" y1="6" y2="6"></line>
-                <line x1="4" x2="20" y1="18" y2="18"></line>
-              </svg>
-              <span className="sr-only">Toggle menu</span>
-            </button>
+          <div className="flex items-center gap-4">
+            <a
+              href="/login"
+              className="hidden md:inline-flex h-9 items-center justify-center rounded-md border border-gray-200 px-4 text-sm font-medium shadow-sm transition-colors hover:bg-gray-100"
+            >
+              Log In
+            </a>
+            <a
+              href="/signup"
+              className="inline-flex h-9 items-center justify-center rounded-md bg-purple-600 px-4 text-sm font-medium text-white shadow transition-colors hover:bg-purple-700"
+            >
+              Sign Up
+            </a>
           </div>
         </div>
       </header>
