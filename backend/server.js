@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
 import cookieParser from 'cookie-parser';
 
 // Load environment variables
@@ -10,6 +11,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.use(express.json());
 
 // CORS middleware configuration
 app.use(cors({
@@ -20,11 +22,11 @@ app.use(cors({
 }));
 
 // Body parser middleware
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/auth', authRoutes);
+app.use('/events', eventRoutes);
 
 app.get('/', (req, res) => {
   res.send('EventEase API is running');
