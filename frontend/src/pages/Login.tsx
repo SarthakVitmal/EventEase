@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import {Button} from "../components/ui/button"
+import api from "../lib/api"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -50,9 +51,12 @@ export default function LoginPage() {
     e.preventDefault()
     if (validateForm()) {
       try {
-        // Placeholder for API call
-        console.log("Form submitted", formData)
-        // Redirect to dashboard
+        const userData = {
+          email: formData.email,
+          password: formData.password,
+        }
+        await api.post("/auth/login", userData);
+        console.log("Login successful")
       } catch (error) {
         console.error("Error submitting form:", error)
       }
