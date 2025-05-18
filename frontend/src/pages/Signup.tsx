@@ -131,6 +131,11 @@ export default function SignUpPage() {
           </div>
           <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {submitError && (
+                <div className="text-red-600 text-sm text-center mb-4">
+                  {submitError}
+                </div>
+              )}
               <div className="space-y-2">
                 <label
                   htmlFor="username"
@@ -270,9 +275,10 @@ export default function SignUpPage() {
 
               <button
                 type="submit"
-                className="w-full px-4 py-2 text-white font-medium rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all"
+                disabled={isSubmitting}
+                className={`w-full px-4 py-2 text-white font-medium rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                Create Account
+                {isSubmitting ? "Creating Account..." : "Create Account"}
               </button>
             </form>
 
