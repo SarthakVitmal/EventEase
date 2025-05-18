@@ -57,6 +57,7 @@ export default function LoginPage() {
         }
         await api.post("/auth/login", userData);
         console.log("Login successful")
+        window.location.href = "/dashboard"
       } catch (error) {
         console.error("Error submitting form:", error)
       }
