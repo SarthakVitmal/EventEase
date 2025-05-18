@@ -2,19 +2,19 @@
 
 import type React from "react"
 import { useState } from "react"
-import { authApi } from "../lib/api";
+import  api  from "../lib/api";
 
 export default function SignUpPage() {
   const [dateOfBirth, setDateOfBirth] = useState<string>("") // Changed to string for <input type="date">
   const [formData, setFormData] = useState({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
     mobileNumber: "",
   })
   const [errors, setErrors] = useState({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -35,7 +35,7 @@ export default function SignUpPage() {
   const validateForm = () => {
     let valid = true
     const newErrors = {
-      fullName: "",
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -43,8 +43,8 @@ export default function SignUpPage() {
       dateOfBirth: "",
     }
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required"
+    if (!formData.username.trim()) {
+      newErrors.username = "Full name is required"
       valid = false
     }
 
@@ -101,14 +101,14 @@ export default function SignUpPage() {
       setIsSubmitting(true);
       try {
         const userData = {
-          fullName: formData.fullName,
+          username: formData.username,
           email: formData.email,
           password: formData.password,
           mobileNumber: formData.mobileNumber,
           dateOfBirth: dateOfBirth,
         };
         
-        await authApi.signup(userData);
+        await api.post("/auth/signup", userData);
         
       
       } catch (error:any) {
@@ -133,24 +133,24 @@ export default function SignUpPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label
-                  htmlFor="fullName"
+                  htmlFor="username"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Full Name
                 </label>
                 <input
-                  id="fullName"
-                  name="fullName"
+                  id="username"
+                  name="username"
                   type="text"
-                  value={formData.fullName}
+                  value={formData.username}
                   onChange={handleChange}
                   placeholder="John Doe"
                   className={`w-full px-4 py-2 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all ${
-                    errors.fullName ? "border-red-500" : "border-gray-300"
+                    errors.username ? "border-red-500" : "border-gray-300"
                   }`}
                 />
-                {errors.fullName && (
-                  <p className="text-xs text-red-500">{errors.fullName}</p>
+                {errors.username && (
+                  <p className="text-xs text-red-500">{errors.username}</p>
                 )}
               </div>
 

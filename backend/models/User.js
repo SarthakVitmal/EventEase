@@ -15,11 +15,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    mobileNumber: {
-        type: String,
-        required: true,
-        unique: true,
-    },
+    mobileNumber: { 
+    type: String, 
+    required: true,  
+    unique: true,  
+    validate: {    
+      validator: function(v) {
+        return /^\d{10,15}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
     dateOfBirth:{
         type: Date,
         required: true,

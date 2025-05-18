@@ -19,12 +19,15 @@ export const signup = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Validate mobile number format (10-15 digits)
+    const formattedMobile = mobileNumber.replace(/\D/g, '');
+
     // Create user
     const user = new User({
       username,
       email,
       password: hashedPassword,
-      mobileNumber,
+      mobileNumber: formattedMobile,
       dateOfBirth: new Date(dateOfBirth),
     });
 
