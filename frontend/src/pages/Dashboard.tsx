@@ -65,7 +65,7 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout");
-      
+      window.location.href = "/login";
     } catch (err) {
       console.error("Logout failed:", err);
       setError("Failed to log out. Please try again.");
@@ -106,7 +106,7 @@ export default function DashboardPage() {
         <div className="text-center">
           <h2 className="text-xl font-semibold text-red-500">Error loading dashboard</h2>
           <p className="mt-2">{error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
+          <Button onClick={() => window.location.href = "/login"} className="mt-4">
             Try Again
           </Button>
         </div>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { CalendarIcon, Clock, MapPin, Upload, LogOut, Info, Plus, Minus } from "lucide-react"
 import { Button } from "../components/ui/button"
@@ -16,13 +16,7 @@ import { Switch } from "../components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import { Card, CardContent } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-
-// Sample user data
-const user = {
-  name: "Rahul Sharma",
-  email: "rahul.sharma..example.com",
-  avatar: "/placeholder.svg?height=40&width=40",
-}
+import api from "../lib/api";
 
 // Sample categories
 const categories = [
@@ -36,12 +30,51 @@ const categories = [
   { value: "food", label: "Food & Drink" },
 ]
 
+interface User {
+  username: string;
+  avatar?: string;
+}
+
 export default function CreateEventPage() {
   const [date, setDate] = useState<Date>()
   const [time, setTime] = useState<string>("18:00")
   const [isOnline, setIsOnline] = useState(false)
   const [isPaid, setIsPaid] = useState(false)
   const [ticketTypes, setTicketTypes] = useState([{ name: "General Admission", price: "500", quantity: "100" }])
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch user details
+        const userResponse = await api.get("/auth/getUser");
+        setUser(userResponse.data.user); // Adjusted to match getUserFromToken response
+
+        // // Fetch events
+        // const eventsResponse = await api.get("/api/user/events");
+        // setUpcomingEvents(eventsResponse.data.upcomingEvents || []);
+        // setPastEvents(eventsResponse.data.pastEvents || []);
+        // setRecommendedEvents(eventsResponse.data.recommendedEvents || []);
+      } catch (err: any) {
+        console.error("Error fetching data:", err);
+        if (err.response?.status === 401) {
+          setError("Unauthorized. Please log in again.");
+          // router.push("/login");
+        } else {
+          setError(err.message || "Failed to load dashboard data.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const addTicketType = () => {
     setTicketTypes([...ticketTypes, { name: "", price: "", quantity: "" }])
@@ -94,12 +127,12 @@ export default function CreateEventPage() {
           </nav>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Avatar>
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+             <Avatar>
+                <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.username} />
+                <AvatarFallback>{user?.username?.charAt(0) || "S"}</AvatarFallback>
               </Avatar>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-sm font-medium">{user?.username}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" className="text-muted-foreground">

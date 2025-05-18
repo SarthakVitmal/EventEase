@@ -100,7 +100,6 @@ export const logout = async (req, res) => {
       sameSite: 'strict',
       path: '/'
     });
-
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Logout failed' });
