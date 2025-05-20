@@ -7,6 +7,7 @@ import Header from './components/layouts/Header';
 import Footer from './components/layouts/Footer';
 import DashboardPage from './pages/Dashboard';
 import CreateEventPage from './pages/Create-Event';
+import EventsPage from './pages/Events';
 
 function AppContent() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function AppContent() {
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard/*" element={<DashboardPage />} />
         <Route path="/dashboard/create-event" element={<CreateEventPage />} />
+        <Route path="/events" element={<EventsPage />} />
       </Routes>
       <Footer />
     </div>
