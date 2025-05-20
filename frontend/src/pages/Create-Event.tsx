@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import dayjs from "dayjs";
 import { CalendarIcon, Clock, MapPin, Upload, LogOut, Info, Plus, Minus } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -14,8 +14,8 @@ import { Switch } from "../components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-// import { toast, Toaster } from "sonner";
 import api from "../lib/api";
+import { cn } from "../lib/utils";
 
 interface TicketType {
   name: string;
@@ -26,6 +26,7 @@ interface TicketType {
 interface User {
   username: string;
   avatar?: string;
+  email?: string;
 }
 
 const categories = [
@@ -44,7 +45,7 @@ export default function CreateEventPage() {
     title: "",
     description: "",
     category: "tech",
-    date: undefined as Date | undefined,
+    date: null as Date | null,
     time: "18:00",
     isOnline: false,
     meetingUrl: "",
@@ -55,20 +56,24 @@ export default function CreateEventPage() {
     contactPhone: "",
     isPaid: false,
     maxAttendees: "",
+    image: null as File | null,
+    imageUrl: "",
   });
+
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { name: "General Admission", price: "500", quantity: "100" }
   ]);
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await api.get("/auth/getUser");
         setUser(response.data.user);
-        // Pre-fill organizer info with user data
         setFormData(prev => ({
           ...prev,
           organizer: response.data.user?.username || "",
@@ -93,6 +98,52 @@ export default function CreateEventPage() {
     setFormData(prev => ({ ...prev, category: value }));
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    setFormData(prev => ({ ...prev, date: date || null }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      console.error('File size exceeds 2MB limit');
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, image: file }));
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setFormData(prev => ({ ...prev, imageUrl: previewUrl }));
+
+    // Upload to Cloudinary
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'event_images'); // Replace with your upload preset
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/drcj3zogj/image/upload`, // Replace with your cloud name
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      if (data.secure_url) {
+        setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const addTicketType = () => {
     setTicketTypes([...ticketTypes, { name: "", price: "", quantity: "" }]);
   };
@@ -110,105 +161,87 @@ export default function CreateEventPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setSubmitting(true);
+    e.preventDefault();
+    setSubmitting(true);
 
-  try {
-    // Validate required fields
-    const requiredFields = ['title', 'description', 'category', 'date', 'time', 'organizer', 'contactEmail'] as const;
-    type FormField = typeof requiredFields[number];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    if (missingFields.length > 0) {
-      console.error('Missing required fields:', missingFields);
-      // toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
-      setSubmitting(false);
-      return;
-    }
+    try {
+      // Validate required fields
+      const requiredFields = ['title', 'description', 'category', 'date', 'time', 'organizer', 'contactEmail'] as const;
+      const missingFields = requiredFields.filter(field => !formData[field]);
 
-    // Validate conditional fields
-    if (formData.isOnline && !formData.meetingUrl) {
-      console.error('Meeting URL is required for online events');
-      // toast.error('Please provide a meeting URL for online events');
-      setSubmitting(false);
-      return;
-    }
-    if (!formData.isOnline && !formData.location) {
-      console.error('Location is required for in-person events');
-      // toast.error('Please provide a location for in-person events');
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate ticket types for paid events
-    if (formData.isPaid) {
-      if (!ticketTypes.length) {
-        console.error('At least one ticket type is required for paid events');
-        // toast.error('Please add at least one ticket type for paid events');
+      if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
         setSubmitting(false);
         return;
       }
-      for (const ticket of ticketTypes) {
-        if (!ticket.name || !ticket.price || !ticket.quantity) {
-          console.error('All ticket fields are required:', ticket);
-          // toast.error('Please fill in all ticket type fields');
+
+      if (formData.isOnline && !formData.meetingUrl) {
+        console.error('Meeting URL is required for online events');
+        setSubmitting(false);
+        return;
+      }
+
+      if (!formData.isOnline && !formData.location) {
+        console.error('Location is required for in-person events');
+        setSubmitting(false);
+        return;
+      }
+
+      if (formData.isPaid) {
+        if (!ticketTypes.length) {
+          console.error('At least one ticket type is required for paid events');
           setSubmitting(false);
           return;
         }
-        if (isNaN(Number(ticket.price)) || Number(ticket.price) < 0) {
-          console.error('Invalid ticket price:', ticket.price);
-          // toast.error('Ticket price must be a valid number');
-          setSubmitting(false);
-          return;
-        }
-        if (isNaN(Number(ticket.quantity)) || Number(ticket.quantity) <= 0) {
-          console.error('Invalid ticket quantity:', ticket.quantity);
-          // toast.error('Ticket quantity must be a positive number');
-          setSubmitting(false);
-          return;
+
+        for (const ticket of ticketTypes) {
+          if (!ticket.name || !ticket.price || !ticket.quantity) {
+            console.error('All ticket fields are required:', ticket);
+            setSubmitting(false);
+            return;
+          }
+
+          if (isNaN(Number(ticket.price)) || Number(ticket.price) < 0) {
+            console.error('Invalid ticket price:', ticket.price);
+            setSubmitting(false);
+            return;
+          }
+
+          if (isNaN(Number(ticket.quantity)) || Number(ticket.quantity) <= 0) {
+            console.error('Invalid ticket quantity:', ticket.quantity);
+            setSubmitting(false);
+            return;
+          }
         }
       }
-    }
 
-    // Validate maxAttendees for non-paid events
-    if (!formData.isPaid && formData.maxAttendees && (isNaN(Number(formData.maxAttendees)) || Number(formData.maxAttendees) <= 0)) {
-      console.error('Invalid max attendees:', formData.maxAttendees);
-      // toast.error('Maximum attendees must be a positive number or left blank');
+      // Prepare payload
+      const payload = {
+        ...formData,
+        date: formData.date ? dayjs(formData.date).format("YYYY-MM-DD") : null,
+        imageUrl: formData.imageUrl,
+        ticketTypes: formData.isPaid ? ticketTypes.map(t => ({
+          name: t.name,
+          price: Number(t.price),
+          quantity: Number(t.quantity)
+        })) : undefined,
+        maxAttendees: !formData.isPaid && formData.maxAttendees ? Number(formData.maxAttendees) : undefined,
+      };
+
+      const response = await api.post("/events/create-event", payload);
+
+      if (response.data.success) {
+        console.log('Event created:', response.data);
+        // Redirect or show success message
+      } else {
+        console.error('Server response:', response.data);
+      }
+    } catch (error: any) {
+      console.error("Error creating event:", error.response?.data || error.message);
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    // Prepare payload
-    const payload = {
-      ...formData,
-      date: formData.date?.toISOString(),
-      ticketTypes: formData.isPaid ? ticketTypes.map(t => ({
-        name: t.name,
-        price: Number(t.price),
-        quantity: Number(t.quantity)
-      })) : undefined,
-      maxAttendees: !formData.isPaid && formData.maxAttendees ? Number(formData.maxAttendees) : undefined,
-      // Remove fields not expected by backend
-      organizerDescription: undefined
-    };
-
-    console.log('Submitting payload:', payload); // Debug payload
-
-    const response = await api.post("/events/create-event", payload);
-
-    if (response.data.success) {
-      // toast.success("Event created successfully!");
-      console.log('Event created:', response.data);
-    } else {
-      console.error('Server response:', response.data);
-      // toast.error(response.data.message || "Failed to create event");
-    }
-  } catch (error: any) {
-    console.error("Error creating event:", error.response?.data || error.message);
-    // toast.error(error.response?.data?.message || "Failed to create event");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   if (loading) {
     return (
@@ -220,7 +253,6 @@ export default function CreateEventPage() {
 
   return (
     <div className="container mx-auto flex min-h-screen flex-col">
-      {/* Header/Navbar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <a href="/" className="flex items-center gap-2">
@@ -264,7 +296,6 @@ export default function CreateEventPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {/* Main Form */}
             <div className="md:col-span-2">
               <form onSubmit={handleSubmit}>
                 <Tabs defaultValue="basic" className="mb-8">
@@ -274,7 +305,6 @@ export default function CreateEventPage() {
                     <TabsTrigger value="tickets">Tickets</TabsTrigger>
                   </TabsList>
 
-                  {/* Basic Info Tab */}
                   <TabsContent value="basic" className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="title">Event Title*</Label>
@@ -304,25 +334,40 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="date">Date*</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.date ? format(formData.date, "PPP") : <span>Select date</span>}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={formData.date}
-                              onSelect={(date) => setFormData(prev => ({ ...prev, date }))}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                    <div className="space-y-2">
+  <Label>Date*</Label>
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className={cn(
+          "w-full justify-start text-left font-normal",
+          !formData.date && "text-muted-foreground"
+        )}
+      >
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        {formData.date ? (
+          dayjs(formData.date).format("MMMM D, YYYY")
+        ) : (
+          <span>Pick a date</span>
+        )}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={formData.date || undefined}
+        onSelect={(date) => {
+          if (date) {
+            setFormData(prev => ({ ...prev, date }));
+          }
+        }}
+        initialFocus
+        fromDate={new Date()} // Only allow future dates
+      />
+    </PopoverContent>
+  </Popover>
+</div>
 
                       <div className="space-y-2">
                         <Label htmlFor="time">Time*</Label>
@@ -378,25 +423,56 @@ export default function CreateEventPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="image">Event Image</Label>
-                      <div className="flex items-center justify-center w-full">
-                        <label
-                          htmlFor="dropzone-file"
-                          className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                        >
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-10 h-10 mb-3 text-gray-400" />
-                            <p className="mb-2 text-sm text-gray-500">
-                              <span className="font-semibold">Click to upload</span> or drag and drop
-                            </p>
-                            <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 2MB)</p>
+                      <div className="flex flex-col items-center gap-4">
+                        {formData.imageUrl ? (
+                          <div className="relative w-full h-64 rounded-lg overflow-hidden">
+                            <img
+                              src={formData.imageUrl}
+                              alt="Event preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 bg-background/80 hover:bg-background"
+                              onClick={() => setFormData(prev => ({ ...prev, imageUrl: '', image: null }))}
+                            >
+                              Change
+                            </Button>
                           </div>
-                          <input id="dropzone-file" type="file" className="hidden" />
-                        </label>
+                        ) : (
+                          <label
+                            htmlFor="dropzone-file"
+                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {uploadingImage ? (
+                                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+                              ) : (
+                                <>
+                                  <Upload className="w-10 h-10 mb-3 text-gray-400" />
+                                  <p className="mb-2 text-sm text-gray-500">
+                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                  </p>
+                                  <p className="text-xs text-gray-500">PNG, JPG (MAX. 2MB)</p>
+                                </>
+                              )}
+                            </div>
+                            <input
+                              id="dropzone-file"
+                              type="file"
+                              className="hidden"
+                              accept="image/png, image/jpeg"
+                              onChange={handleImageUpload}
+                              disabled={uploadingImage}
+                            />
+                          </label>
+                        )}
                       </div>
                     </div>
                   </TabsContent>
 
-                  {/* Details Tab */}
                   <TabsContent value="details" className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="description">Event Description*</Label>
@@ -456,7 +532,6 @@ export default function CreateEventPage() {
                     </div>
                   </TabsContent>
 
-                  {/* Tickets Tab */}
                   <TabsContent value="tickets" className="space-y-6">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -549,13 +624,13 @@ export default function CreateEventPage() {
                 </Tabs>
 
                 <div className="flex justify-end gap-4 mt-8">
-                  <Button type="button" variant="outline" onClick={() => {}}>
+                  <Button type="button" variant="outline" onClick={() => { }}>
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    disabled={submitting}
+                    disabled={submitting || uploadingImage}
                   >
                     {submitting ? "Creating..." : "Create Event"}
                   </Button>
@@ -563,7 +638,6 @@ export default function CreateEventPage() {
               </form>
             </div>
 
-            {/* Sidebar */}
             <div className="md:col-span-1">
               <div className="sticky top-24 space-y-6">
                 <Card>
