@@ -11,10 +11,14 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
+    // Check if email or mobile number already exists
+    const existingUser = await User.findOne({
+      $or: [{ email }, { mobileNumber: mobileNumber.replace(/\D/g, '') }],
+    });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already in use' });
+      return res
+        .status(400)
+        .json({ message: 'Email or phone number already exist' });
     }
 
     // Hash password
@@ -39,7 +43,6 @@ export const signup = async (req, res) => {
       message: 'User created successfully',
       userId: user._id,
     });
-
   } catch (error) {
     console.error('Signup error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -52,7 +55,9 @@ export const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res
+        .status(400)
+        .json({ message: 'Email and password are required' });
     }
 
     // Check if user exists
@@ -67,11 +72,9 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
 
     // Return success (without sensitive data)
     res.cookie('token', token, {
@@ -85,12 +88,11 @@ export const login = async (req, res) => {
       message: 'Login successful',
       userId: user._id,
     });
-
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
 
 export const logout = async (req, res) => {
   try {
@@ -98,7 +100,7 @@ export const logout = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      path: '/'
+      path: '/',
     });
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
@@ -108,26 +110,27 @@ export const logout = async (req, res) => {
 
 export const getUserFromToken = async (req, res) => {
   try {
-    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(' ')[1];
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({ message: 'No token provided' });
     }
 
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
-      console.error("Token verification failed:", err.message);
-      return res.status(401).json({ message: "Invalid or expired token" });
+      console.error('Token verification failed:', err.message);
+      return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
     res.status(200).json({ user });
   } catch (error) {
-    console.error("Error in getUserFromToken:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error('Error in getUserFromToken:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
