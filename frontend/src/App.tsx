@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
 
 import Landing from './pages/Home';
 import LoginPage from './pages/Login';
@@ -8,6 +13,7 @@ import Footer from './components/layouts/Footer';
 import DashboardPage from './pages/Dashboard';
 import CreateEventPage from './pages/Create-Event';
 import EventsPage from './pages/Events';
+import { Test } from './pages/Test';
 
 function AppContent() {
   const location = useLocation();
@@ -20,6 +26,7 @@ function AppContent() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<Landing />} />
+        <Route path="/test" element={<Test />} />
         <Route path="/dashboard/*" element={<DashboardPage />} />
         <Route path="/dashboard/create-event" element={<CreateEventPage />} />
         <Route path="/events" element={<EventsPage />} />

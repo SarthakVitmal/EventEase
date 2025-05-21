@@ -1,21 +1,45 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import { CalendarIcon, Clock, MapPin, Upload, LogOut, Info, Plus, Minus } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Calendar } from "../components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { Card, CardContent } from "../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import api from "../lib/api";
-import { cn } from "../lib/utils";
+import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import {
+  CalendarIcon,
+  Clock,
+  MapPin,
+  Upload,
+  LogOut,
+  Info,
+  Plus,
+  Minus,
+} from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { DatePicker } from '../components/ui/date-picker';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { Switch } from '../components/ui/switch';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Card, CardContent } from '../components/ui/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../components/ui/tabs';
+import api from '../lib/api';
+import { cn } from '../lib/utils';
 
 interface TicketType {
   name: string;
@@ -30,38 +54,38 @@ interface User {
 }
 
 const categories = [
-  { value: "tech", label: "Technology" },
-  { value: "business", label: "Business" },
-  { value: "design", label: "Design" },
-  { value: "marketing", label: "Marketing" },
-  { value: "health", label: "Health & Wellness" },
-  { value: "education", label: "Education" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "food", label: "Food & Drink" },
+  { value: 'tech', label: 'Technology' },
+  { value: 'business', label: 'Business' },
+  { value: 'design', label: 'Design' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'health', label: 'Health & Wellness' },
+  { value: 'education', label: 'Education' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'food', label: 'Food & Drink' },
 ];
 
 export default function CreateEventPage() {
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "tech",
+    title: '',
+    description: '',
+    category: 'tech',
     date: null as Date | null,
-    time: "18:00",
+    time: '18:00',
     isOnline: false,
-    meetingUrl: "",
-    location: "",
-    organizer: "",
-    organizerDescription: "",
-    contactEmail: "",
-    contactPhone: "",
+    meetingUrl: '',
+    location: '',
+    organizer: '',
+    organizerDescription: '',
+    contactEmail: '',
+    contactPhone: '',
     isPaid: false,
-    maxAttendees: "",
+    maxAttendees: '',
     image: null as File | null,
-    imageUrl: "",
+    imageUrl: '',
   });
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
-    { name: "General Admission", price: "500", quantity: "100" }
+    { name: 'General Admission', price: '500', quantity: '100' },
   ]);
 
   const [user, setUser] = useState<User | null>(null);
@@ -72,15 +96,15 @@ export default function CreateEventPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get("/auth/getUser");
+        const response = await api.get('/auth/getUser');
         setUser(response.data.user);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          organizer: response.data.user?.username || "",
-          contactEmail: response.data.user?.email || ""
+          organizer: response.data.user?.username || '',
+          contactEmail: response.data.user?.email || '',
         }));
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error('Error fetching user:', error);
       } finally {
         setLoading(false);
       }
@@ -89,17 +113,19 @@ export default function CreateEventPage() {
     fetchUser();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, category: value }));
+    setFormData((prev) => ({ ...prev, category: value }));
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    setFormData(prev => ({ ...prev, date: date || null }));
+    setFormData((prev) => ({ ...prev, date: date || null }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,11 +138,11 @@ export default function CreateEventPage() {
       return;
     }
 
-    setFormData(prev => ({ ...prev, image: file }));
+    setFormData((prev) => ({ ...prev, image: file }));
 
     // Create preview URL
     const previewUrl = URL.createObjectURL(file);
-    setFormData(prev => ({ ...prev, imageUrl: previewUrl }));
+    setFormData((prev) => ({ ...prev, imageUrl: previewUrl }));
 
     // Upload to Cloudinary
     setUploadingImage(true);
@@ -130,12 +156,12 @@ export default function CreateEventPage() {
         {
           method: 'POST',
           body: formData,
-        }
+        },
       );
 
       const data = await response.json();
       if (data.secure_url) {
-        setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
+        setFormData((prev) => ({ ...prev, imageUrl: data.secure_url }));
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -145,7 +171,7 @@ export default function CreateEventPage() {
   };
 
   const addTicketType = () => {
-    setTicketTypes([...ticketTypes, { name: "", price: "", quantity: "" }]);
+    setTicketTypes([...ticketTypes, { name: '', price: '', quantity: '' }]);
   };
 
   const removeTicketType = (index: number) => {
@@ -154,7 +180,11 @@ export default function CreateEventPage() {
     setTicketTypes(newTicketTypes);
   };
 
-  const updateTicketType = (index: number, field: keyof TicketType, value: string) => {
+  const updateTicketType = (
+    index: number,
+    field: keyof TicketType,
+    value: string,
+  ) => {
     const newTicketTypes = [...ticketTypes];
     newTicketTypes[index] = { ...newTicketTypes[index], [field]: value };
     setTicketTypes(newTicketTypes);
@@ -166,8 +196,16 @@ export default function CreateEventPage() {
 
     try {
       // Validate required fields
-      const requiredFields = ['title', 'description', 'category', 'date', 'time', 'organizer', 'contactEmail'] as const;
-      const missingFields = requiredFields.filter(field => !formData[field]);
+      const requiredFields = [
+        'title',
+        'description',
+        'category',
+        'date',
+        'time',
+        'organizer',
+        'contactEmail',
+      ] as const;
+      const missingFields = requiredFields.filter((field) => !formData[field]);
 
       if (missingFields.length > 0) {
         console.error('Missing required fields:', missingFields);
@@ -218,17 +256,22 @@ export default function CreateEventPage() {
       // Prepare payload
       const payload = {
         ...formData,
-        date: formData.date ? dayjs(formData.date).format("YYYY-MM-DD") : null,
+        date: formData.date ? dayjs(formData.date).format('YYYY-MM-DD') : null,
         imageUrl: formData.imageUrl,
-        ticketTypes: formData.isPaid ? ticketTypes.map(t => ({
-          name: t.name,
-          price: Number(t.price),
-          quantity: Number(t.quantity)
-        })) : undefined,
-        maxAttendees: !formData.isPaid && formData.maxAttendees ? Number(formData.maxAttendees) : undefined,
+        ticketTypes: formData.isPaid
+          ? ticketTypes.map((t) => ({
+              name: t.name,
+              price: Number(t.price),
+              quantity: Number(t.quantity),
+            }))
+          : undefined,
+        maxAttendees:
+          !formData.isPaid && formData.maxAttendees
+            ? Number(formData.maxAttendees)
+            : undefined,
       };
 
-      const response = await api.post("/events/create-event", payload);
+      const response = await api.post('/events/create-event', payload);
 
       if (response.data.success) {
         console.log('Event created:', response.data);
@@ -237,7 +280,10 @@ export default function CreateEventPage() {
         console.error('Server response:', response.data);
       }
     } catch (error: any) {
-      console.error("Error creating event:", error.response?.data || error.message);
+      console.error(
+        'Error creating event:',
+        error.response?.data || error.message,
+      );
     } finally {
       setSubmitting(false);
     }
@@ -261,13 +307,22 @@ export default function CreateEventPage() {
             </span>
           </a>
           <nav className="hidden md:flex gap-6">
-            <a href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <a
+              href="/dashboard"
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
               Dashboard
             </a>
-            <a href="/my-events" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <a
+              href="/my-events"
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
               My Events
             </a>
-            <a href="/create-event" className="text-sm font-medium text-primary">
+            <a
+              href="/create-event"
+              className="text-sm font-medium text-primary"
+            >
               Create Event
             </a>
           </nav>
@@ -275,13 +330,19 @@ export default function CreateEventPage() {
             <div className="flex items-center gap-2">
               <Avatar>
                 <AvatarImage src={user?.avatar} alt={user?.username} />
-                <AvatarFallback>{user?.username?.charAt(0) || "U"}</AvatarFallback>
+                <AvatarFallback>
+                  {user?.username?.charAt(0) || 'U'}
+                </AvatarFallback>
               </Avatar>
               <div className="hidden md:block">
                 <p className="text-sm font-medium">{user?.username}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground"
+            >
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
@@ -291,8 +352,12 @@ export default function CreateEventPage() {
       <main className="flex-1 py-8 px-4 md:px-6 lg:px-8">
         <div className="container">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Create New Event</h1>
-            <p className="text-muted-foreground mt-1">Fill in the details to create your event.</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Create New Event
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Fill in the details to create your event.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -319,13 +384,19 @@ export default function CreateEventPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="category">Category*</Label>
-                      <Select value={formData.category} onValueChange={handleSelectChange}>
+                      <Select
+                        value={formData.category}
+                        onValueChange={handleSelectChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((category) => (
-                            <SelectItem key={category.value} value={category.value}>
+                            <SelectItem
+                              key={category.value}
+                              value={category.value}
+                            >
                               {category.label}
                             </SelectItem>
                           ))}
@@ -334,40 +405,20 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-  <Label>Date*</Label>
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button
-        variant="outline"
-        className={cn(
-          "w-full justify-start text-left font-normal",
-          !formData.date && "text-muted-foreground"
-        )}
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {formData.date ? (
-          dayjs(formData.date).format("MMMM D, YYYY")
-        ) : (
-          <span>Pick a date</span>
-        )}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent className="w-auto p-0" align="start">
-      <Calendar
-        mode="single"
-        selected={formData.date || undefined}
-        onSelect={(date) => {
-          if (date) {
-            setFormData(prev => ({ ...prev, date }));
-          }
-        }}
-        initialFocus
-        fromDate={new Date()} // Only allow future dates
-      />
-    </PopoverContent>
-  </Popover>
-</div>
+                      <div className="space-y-2">
+                        <Label>Date*</Label>
+                        <DatePicker
+                          date={formData.date || undefined}
+                          setDate={(date) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              date: date || null,
+                            }))
+                          }
+                          placeholder="Pick a date"
+                          fromDate={new Date()} // Only allow future dates
+                        />
+                      </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="time">Time*</Label>
@@ -390,7 +441,12 @@ export default function CreateEventPage() {
                         <Switch
                           id="isOnline"
                           checked={formData.isOnline}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isOnline: checked }))}
+                          onCheckedChange={(checked) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              isOnline: checked,
+                            }))
+                          }
                         />
                       </div>
                       {formData.isOnline ? (
@@ -436,7 +492,13 @@ export default function CreateEventPage() {
                               variant="ghost"
                               size="sm"
                               className="absolute top-2 right-2 bg-background/80 hover:bg-background"
-                              onClick={() => setFormData(prev => ({ ...prev, imageUrl: '', image: null }))}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  imageUrl: '',
+                                  image: null,
+                                }))
+                              }
                             >
                               Change
                             </Button>
@@ -453,9 +515,14 @@ export default function CreateEventPage() {
                                 <>
                                   <Upload className="w-10 h-10 mb-3 text-gray-400" />
                                   <p className="mb-2 text-sm text-gray-500">
-                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                    <span className="font-semibold">
+                                      Click to upload
+                                    </span>{' '}
+                                    or drag and drop
                                   </p>
-                                  <p className="text-xs text-gray-500">PNG, JPG (MAX. 2MB)</p>
+                                  <p className="text-xs text-gray-500">
+                                    PNG, JPG (MAX. 2MB)
+                                  </p>
                                 </>
                               )}
                             </div>
@@ -498,7 +565,9 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="organizerDescription">About the Organizer</Label>
+                      <Label htmlFor="organizerDescription">
+                        About the Organizer
+                      </Label>
                       <Textarea
                         id="organizerDescription"
                         value={formData.organizerDescription}
@@ -539,7 +608,12 @@ export default function CreateEventPage() {
                         <Switch
                           id="isPaid"
                           checked={formData.isPaid}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPaid: checked }))}
+                          onCheckedChange={(checked) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              isPaid: checked,
+                            }))
+                          }
                         />
                       </div>
                     </div>
@@ -548,7 +622,12 @@ export default function CreateEventPage() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-medium">Ticket Types*</h3>
-                          <Button type="button" variant="outline" size="sm" onClick={addTicketType}>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addTicketType}
+                          >
                             <Plus className="mr-2 h-4 w-4" /> Add Ticket Type
                           </Button>
                         </div>
@@ -558,34 +637,58 @@ export default function CreateEventPage() {
                             <CardContent className="pt-6">
                               <div className="grid gap-4 md:grid-cols-4">
                                 <div className="md:col-span-2 space-y-2">
-                                  <Label htmlFor={`ticket-name-${index}`}>Name*</Label>
+                                  <Label htmlFor={`ticket-name-${index}`}>
+                                    Name*
+                                  </Label>
                                   <Input
                                     id={`ticket-name-${index}`}
                                     value={ticket.name}
-                                    onChange={(e) => updateTicketType(index, "name", e.target.value)}
+                                    onChange={(e) =>
+                                      updateTicketType(
+                                        index,
+                                        'name',
+                                        e.target.value,
+                                      )
+                                    }
                                     placeholder="e.g. General Admission"
                                     required
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`ticket-price-${index}`}>Price (₹)*</Label>
+                                  <Label htmlFor={`ticket-price-${index}`}>
+                                    Price (₹)*
+                                  </Label>
                                   <Input
                                     id={`ticket-price-${index}`}
                                     type="number"
                                     value={ticket.price}
-                                    onChange={(e) => updateTicketType(index, "price", e.target.value)}
+                                    onChange={(e) =>
+                                      updateTicketType(
+                                        index,
+                                        'price',
+                                        e.target.value,
+                                      )
+                                    }
                                     placeholder="500"
                                     required
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`ticket-quantity-${index}`}>Quantity*</Label>
+                                  <Label htmlFor={`ticket-quantity-${index}`}>
+                                    Quantity*
+                                  </Label>
                                   <div className="flex items-center">
                                     <Input
                                       id={`ticket-quantity-${index}`}
                                       type="number"
                                       value={ticket.quantity}
-                                      onChange={(e) => updateTicketType(index, "quantity", e.target.value)}
+                                      onChange={(e) =>
+                                        updateTicketType(
+                                          index,
+                                          'quantity',
+                                          e.target.value,
+                                        )
+                                      }
                                       placeholder="100"
                                       required
                                     />
@@ -617,14 +720,16 @@ export default function CreateEventPage() {
                           onChange={handleInputChange}
                           placeholder="100"
                         />
-                        <p className="text-sm text-muted-foreground">Leave blank for unlimited attendees</p>
+                        <p className="text-sm text-muted-foreground">
+                          Leave blank for unlimited attendees
+                        </p>
                       </div>
                     )}
                   </TabsContent>
                 </Tabs>
 
                 <div className="flex justify-end gap-4 mt-8">
-                  <Button type="button" variant="outline" onClick={() => { }}>
+                  <Button type="button" variant="outline" onClick={() => {}}>
                     Cancel
                   </Button>
                   <Button
@@ -632,7 +737,7 @@ export default function CreateEventPage() {
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     disabled={submitting || uploadingImage}
                   >
-                    {submitting ? "Creating..." : "Create Event"}
+                    {submitting ? 'Creating...' : 'Create Event'}
                   </Button>
                 </div>
               </form>
@@ -642,23 +747,36 @@ export default function CreateEventPage() {
               <div className="sticky top-24 space-y-6">
                 <Card>
                   <CardContent className="pt-6">
-                    <h3 className="text-lg font-medium mb-4">Tips for Creating Events</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                      Tips for Creating Events
+                    </h3>
                     <ul className="space-y-3">
                       <li className="flex items-start">
                         <Info className="h-5 w-5 mr-2 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Use a clear, descriptive title that includes keywords.</span>
+                        <span className="text-sm">
+                          Use a clear, descriptive title that includes keywords.
+                        </span>
                       </li>
                       <li className="flex items-start">
                         <Info className="h-5 w-5 mr-2 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Upload a high-quality image (recommended size: 1920x1080px).</span>
+                        <span className="text-sm">
+                          Upload a high-quality image (recommended size:
+                          1920x1080px).
+                        </span>
                       </li>
                       <li className="flex items-start">
                         <Info className="h-5 w-5 mr-2 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Provide detailed information about what attendees can expect.</span>
+                        <span className="text-sm">
+                          Provide detailed information about what attendees can
+                          expect.
+                        </span>
                       </li>
                       <li className="flex items-start">
                         <Info className="h-5 w-5 mr-2 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Set a reasonable ticket price based on your target audience.</span>
+                        <span className="text-sm">
+                          Set a reasonable ticket price based on your target
+                          audience.
+                        </span>
                       </li>
                     </ul>
                   </CardContent>
@@ -668,7 +786,8 @@ export default function CreateEventPage() {
                   <CardContent className="pt-6">
                     <h3 className="text-lg font-medium mb-4">Need Help?</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      If you have any questions or need assistance creating your event, our support team is here to help.
+                      If you have any questions or need assistance creating your
+                      event, our support team is here to help.
                     </p>
                     <Button variant="outline" className="w-full">
                       Contact Support
