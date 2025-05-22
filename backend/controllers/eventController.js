@@ -2,7 +2,6 @@ import Event from '../models/Event.js';
 
 const createEvent = async(req, res) => {
     try {
-        // Verify request has body
         if (!req.body) {
             return res.status(400).json({ message: 'Request body is missing' });
         }
@@ -35,9 +34,9 @@ const createEvent = async(req, res) => {
         }
 
         // Validate user authentication
-        if (!req.userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
+        // if (!req.userId) {
+        //     return res.status(401).json({ message: 'Unauthorized' });
+        // }
 
         // Prepare ticket data
         const preparedTicketTypes = isPaid ?
@@ -65,7 +64,7 @@ const createEvent = async(req, res) => {
             ticketTypes: preparedTicketTypes,
             maxAttendees: !isPaid ? parseInt(maxAttendees) || undefined : undefined,
             creator: req.user.userId,
-            status: 'draft'
+            status: 'published',
         });
 
         await event.save();
@@ -111,93 +110,93 @@ export const getEventsByUser = async(req, res) => {
     }
 }
 
-export const getAllEvents = async (req, res) => {
-  try {
-    // Extract query parameters
-    const {
-      futureOnly,
-      category,
-      search,
-      sort,
-      fromDate,
-      toDate,
-      page = 1,
-      limit = 10
-    } = req.query;
+export const getAllEvents = async(req, res) => {
+    try {
+        // Extract query parameters
+        const {
+            futureOnly,
+            category,
+            search,
+            sort,
+            fromDate,
+            toDate,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-    // Build the base query
-    let query = {};
+        // Build the base query
+        let query = {};
 
-    // Filter for future events only
-    if (futureOnly === 'true') {
-      query.date = { $gte: new Date() };
+        // Filter for future events only
+        if (futureOnly === 'true') {
+            query.date = { $gte: new Date() };
+        }
+
+        // Filter by category
+        if (category && category !== 'all') {
+            query.category = category;
+        }
+
+        // Text search
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Date range filter
+        if (fromDate || toDate) {
+            query.date = query.date || {};
+            if (fromDate) query.date.$gte = new Date(fromDate);
+            if (toDate) query.date.$lte = new Date(toDate);
+        }
+
+        // Build sort options
+        let sortOption = { date: 1 }; // Default: sort by date ascending
+        if (sort) {
+            switch (sort) {
+                case 'date-desc':
+                    sortOption = { date: -1 };
+                    break;
+                case 'price-asc':
+                    sortOption = { price: 1 };
+                    break;
+                case 'price-desc':
+                    sortOption = { price: -1 };
+                    break;
+                case 'popularity':
+                    sortOption = { attendees: -1 };
+                    break;
+            }
+        }
+
+        // Get total count for pagination
+        const total = await Event.countDocuments(query);
+
+        // Fetch events with pagination
+        const events = await Event.find(query)
+            .populate('creator', 'username email avatarUrl')
+            .sort(sortOption)
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        res.status(200).json({
+            success: true,
+            total,
+            page: parseInt(page),
+            pages: Math.ceil(total / limit),
+            events
+        });
+
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
     }
-
-    // Filter by category
-    if (category && category !== 'all') {
-      query.category = category;
-    }
-
-    // Text search
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // Date range filter
-    if (fromDate || toDate) {
-      query.date = query.date || {};
-      if (fromDate) query.date.$gte = new Date(fromDate);
-      if (toDate) query.date.$lte = new Date(toDate);
-    }
-
-    // Build sort options
-    let sortOption = { date: 1 }; // Default: sort by date ascending
-    if (sort) {
-      switch (sort) {
-        case 'date-desc':
-          sortOption = { date: -1 };
-          break;
-        case 'price-asc':
-          sortOption = { price: 1 };
-          break;
-        case 'price-desc':
-          sortOption = { price: -1 };
-          break;
-        case 'popularity':
-          sortOption = { attendees: -1 };
-          break;
-      }
-    }
-
-    // Get total count for pagination
-    const total = await Event.countDocuments(query);
-
-    // Fetch events with pagination
-    const events = await Event.find(query)
-      .populate('creator', 'username email avatarUrl')
-      .sort(sortOption)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
-    res.status(200).json({
-      success: true,
-      total,
-      page: parseInt(page),
-      pages: Math.ceil(total / limit),
-      events
-    });
-
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Internal server error',
-      error: error.message 
-    });
-  }
 };
 
 export default createEvent;

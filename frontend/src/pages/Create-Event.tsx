@@ -18,11 +18,6 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { DatePicker } from '../components/ui/date-picker';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../components/ui/popover';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -416,7 +411,7 @@ export default function CreateEventPage() {
                             }))
                           }
                           placeholder="Pick a date"
-                          fromDate={new Date()} // Only allow future dates
+                          fromDate={new Date()} 
                         />
                       </div>
 
