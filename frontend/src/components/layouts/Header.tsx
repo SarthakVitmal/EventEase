@@ -11,7 +11,7 @@ export default function Header() {
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#events" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <a href="/events" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Events
             </a>
             <a href="#features" className="text-sm font-medium hover:text-purple-600 transition-colors">
