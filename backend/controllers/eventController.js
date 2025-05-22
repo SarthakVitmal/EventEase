@@ -1,4 +1,5 @@
 import Event from '../models/Event.js';
+import { uploadToCloudinary } from '../cloudConfig.js';
 
 const createEvent = async(req, res) => {
     try {
@@ -53,6 +54,7 @@ const createEvent = async(req, res) => {
             description,
             category,
             date: new Date(date),
+            imageUrl: req.body.imageUrl,
             time,
             isOnline: Boolean(isOnline),
             meetingUrl: isOnline ? meetingUrl : undefined,
@@ -194,6 +196,53 @@ export const getAllEvents = async(req, res) => {
         res.status(500).json({
             success: false,
             message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+export const uploadEventImage = async(req, res) => {
+    try {
+        // Debugging logs
+        console.log('Request headers:', req.headers);
+        console.log('Request file:', req.file);
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file received by the server'
+            });
+        }
+
+        if (!req.file.buffer || req.file.buffer.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Received empty file buffer',
+                fileInfo: {
+                    originalname: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    size: req.file.size
+                }
+            });
+        }
+
+        const result = await uploadToCloudinary(req.file.buffer);
+
+        res.status(200).json({
+            success: true,
+            imageUrl: result.secure_url
+        });
+
+    } catch (error) {
+        console.error('Upload error:', {
+            message: error.message,
+            stack: error.stack,
+            rawError: error
+        });
+
+        res.status(500).json({
+            success: false,
+            message: 'Upload failed',
             error: error.message
         });
     }

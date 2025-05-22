@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import {
-  CalendarIcon,
   Clock,
   MapPin,
   Upload,
@@ -34,7 +33,6 @@ import {
   TabsTrigger,
 } from '../components/ui/tabs';
 import api from '../lib/api';
-import { cn } from '../lib/utils';
 
 interface TicketType {
   name: string;
@@ -119,52 +117,50 @@ export default function CreateEventPage() {
     setFormData((prev) => ({ ...prev, category: value }));
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setFormData((prev) => ({ ...prev, date: date || null }));
-  };
+ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  console.log('Selected file:', { // Debug log
+    name: file.name,
+    type: file.type,
+    size: file.size
+  });
 
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      console.error('File size exceeds 2MB limit');
-      return;
+  setUploadingImage(true);
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file); // Must match Multer field name
+
+    // Debug FormData contents
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
     }
 
-    setFormData((prev) => ({ ...prev, image: file }));
+    const response = await api.post('/events/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      transformRequest: (data) => data // Prevent axios from transforming FormData
+    });
 
-    // Create preview URL
-    const previewUrl = URL.createObjectURL(file);
-    setFormData((prev) => ({ ...prev, imageUrl: previewUrl }));
-
-    // Upload to Cloudinary
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'event_images'); // Replace with your upload preset
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/drcj3zogj/image/upload`, // Replace with your cloud name
-        {
-          method: 'POST',
-          body: formData,
-        },
-      );
-
-      const data = await response.json();
-      if (data.secure_url) {
-        setFormData((prev) => ({ ...prev, imageUrl: data.secure_url }));
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    } finally {
-      setUploadingImage(false);
+    if (!response.data.imageUrl) {
+      throw new Error('No image URL in response');
     }
-  };
 
+    setFormData(prev => ({ ...prev, imageUrl: response.data.imageUrl }));
+
+  } catch (error:any) {
+    console.error('Upload failed:', {
+      error: error.response?.data || error.message
+    });
+    alert(error.response?.data?.message || 'Upload failed');
+  } finally {
+    setUploadingImage(false);
+  }
+};
   const addTicketType = () => {
     setTicketTypes([...ticketTypes, { name: '', price: '', quantity: '' }]);
   };
@@ -255,10 +251,10 @@ export default function CreateEventPage() {
         imageUrl: formData.imageUrl,
         ticketTypes: formData.isPaid
           ? ticketTypes.map((t) => ({
-              name: t.name,
-              price: Number(t.price),
-              quantity: Number(t.quantity),
-            }))
+            name: t.name,
+            price: Number(t.price),
+            quantity: Number(t.quantity),
+          }))
           : undefined,
         maxAttendees:
           !formData.isPaid && formData.maxAttendees
@@ -283,6 +279,8 @@ export default function CreateEventPage() {
       setSubmitting(false);
     }
   };
+
+
 
   if (loading) {
     return (
@@ -411,7 +409,7 @@ export default function CreateEventPage() {
                             }))
                           }
                           placeholder="Pick a date"
-                          fromDate={new Date()} 
+                          fromDate={new Date()}
                         />
                       </div>
 
@@ -724,7 +722,7 @@ export default function CreateEventPage() {
                 </Tabs>
 
                 <div className="flex justify-end gap-4 mt-8">
-                  <Button type="button" variant="outline" onClick={() => {}}>
+                  <Button type="button" variant="outline" onClick={() => { }}>
                     Cancel
                   </Button>
                   <Button
