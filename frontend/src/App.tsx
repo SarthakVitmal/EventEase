@@ -13,6 +13,7 @@ import Footer from './components/layouts/Footer';
 import DashboardPage from './pages/Dashboard';
 import CreateEventPage from './pages/Create-Event';
 import EventsPage from './pages/Events';
+import ViewEvent from './pages/View-Event';
 import { Test } from './pages/Test';
 
 function AppContent() {
@@ -30,6 +31,7 @@ function AppContent() {
         <Route path="/dashboard/*" element={<DashboardPage />} />
         <Route path="/dashboard/create-event" element={<CreateEventPage />} />
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:id" element={<ViewEvent />} />
       </Routes>
       <Footer />
     </div>

@@ -248,4 +248,43 @@ export const uploadEventImage = async(req, res) => {
     }
 };
 
+export const getEventById = async(req, res) => {
+    try {
+        // Support both /getEventById/:eventId and /:id
+        const eventId = req.params.eventId || req.params.id;
+        const event = await Event.findById(eventId)
+            .populate('creator', 'username email avatarUrl');
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        res.json({
+            success: true,
+            event: {
+                id: event._id,
+                title: event.title,
+                description: event.description,
+                date: event.date,
+                time: event.time,
+                location: event.location,
+                // price: event.ticketTypes ? .[0] ? .price || 0,
+                category: event.category,
+                // attendees: event.attendees ? .length || 0,
+                imageUrl: event.imageUrl,
+                isOnline: event.isOnline,
+                meetingUrl: event.meetingUrl,
+                organizer: {
+                    name: event.organizer,
+                    // avatarUrl: event.creator ? .avatarUrl,
+                    description: event.organizerDescription
+                },
+                ticketTypes: event.ticketTypes
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 export default createEvent;

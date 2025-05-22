@@ -1,4 +1,4 @@
-import createEvent, { getEventsByUser, getAllEvents, uploadEventImage } from '../controllers/eventController.js';
+import createEvent, { getEventsByUser, getAllEvents, uploadEventImage, getEventById } from '../controllers/eventController.js';
 import express from 'express';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import { upload } from '../cloudConfig.js';
@@ -10,15 +10,13 @@ router.get('/getEventsByUser', getEventsByUser);
 router.get('/getAllEvents', getAllEvents);
 router.post('/upload-image',
     (req, res, next) => {
-        console.log('Request received for upload'); // Debug log
         next();
     },
-    upload.single('image'), // Must match the FormData field name
+    upload.single('image'),
     (req, res, next) => {
-        console.log('File after Multer:', req.file); // Debug log
         next();
     },
     uploadEventImage
 );
-
+router.get('/:id', getEventById);
 export default router;

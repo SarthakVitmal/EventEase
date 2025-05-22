@@ -63,17 +63,23 @@ export default function EventsPage() {
   try {
     setLoading(true);
     const response = await api.get("/events/getAllEvents", {
-      // params: {
-      //   futureOnly: true,
-      //   category: selectedCategory !== "all" ? selectedCategory : undefined,
-      //   search: searchQuery || undefined,
-      //   sort: sortBy,
-      //   fromDate: dateFilter.from ? dayjs(dateFilter.from).format("YYYY-MM-DD") : undefined,
-      //   toDate: dateFilter.to ? dayjs(dateFilter.to).format("YYYY-MM-DD") : undefined,
-      // },
+      params: {
+        futureOnly: true,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        search: searchQuery || undefined,
+        sort: sortBy,
+        fromDate: dateFilter.from ? dayjs(dateFilter.from).format("YYYY-MM-DD") : undefined,
+        toDate: dateFilter.to ? dayjs(dateFilter.to).format("YYYY-MM-DD") : undefined,
+      },
     });
-    console.log("Fetched events:", response.data.events);
-    setEvents(response.data.events);
+
+    const eventsWithIds = response.data.events.map((event:any) => ({
+      ...event,
+      id: event.id || event._id 
+    }));
+
+    console.log("Fetched events:", eventsWithIds);
+    setEvents(eventsWithIds);
   } catch (err) {
     console.error("Failed to fetch events:", err);
     setError("Failed to load events. Please try again later.");
@@ -108,6 +114,32 @@ useEffect(() => {
       maximumFractionDigits: 0,
     }).format(price)
   }
+  const handleViewEvent = (eventId: string) => {
+  console.log("=== DEBUG EVENT CLICK ===");
+  console.log("Event ID received:", eventId);
+  console.log("Event ID type:", typeof eventId);
+  console.log("Event ID length:", eventId?.length);
+  console.log("Is eventId truthy?", !!eventId);
+  
+  // Check the full event object to see what ID field exists
+  const clickedEvent = events.find(e => e.id === eventId);
+  console.log("Full event object:", clickedEvent);
+  console.log("Available ID fields:", {
+    id: clickedEvent?.id,
+    _id: clickedEvent?.id, // MongoDB typically uses _id
+  });
+  
+  if (!eventId || eventId === 'undefined') {
+    console.error("ERROR: Event ID is undefined or invalid");
+    return;
+  }
+  
+  // Try using _id if id doesn't exist
+  const actualId = clickedEvent?.id || clickedEvent?.id || eventId;
+  console.log("Using ID for navigation:", actualId);
+  
+  window.location.href = `/${actualId}`;
+}
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -305,9 +337,9 @@ useEffect(() => {
                             {event.organizer.name}
                           </AvatarFallback>
                         </Avatar>
-                        {/* <span className="text-sm">
-                          {event.organizer.name.charAt(0)}
-                        </span> */}
+                        <span className="text-sm">
+                          {event.organizer.name}
+                        </span>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-purple-600">
@@ -316,6 +348,10 @@ useEffect(() => {
                         <div className="text-xs text-gray-500">
                           {event.attendees} attending
                         </div>
+
+                         <Button onClick={() => handleViewEvent(event.id)} className="text-sm bg-purple-600 hover:bg-purple-700 text-white mt-2 cursor-pointer">
+                          View Details
+                        </Button>
                       </div>
                     </CardFooter>
                   </Card>
