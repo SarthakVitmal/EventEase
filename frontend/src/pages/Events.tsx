@@ -138,7 +138,7 @@ useEffect(() => {
   const actualId = clickedEvent?.id || clickedEvent?.id || eventId;
   console.log("Using ID for navigation:", actualId);
   
-  window.location.href = `/${actualId}`;
+  window.location.href = `/events/${actualId}`;
 }
 
   return (
