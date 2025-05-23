@@ -32,6 +32,8 @@ function AppContent() {
         <Route path="/dashboard/create-event" element={<CreateEventPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<ViewEvent />} />
+        <Route path="/dashboard/all-events" element={<EventsPage />} />
+        <Route path="/dashboard/all-events/:id" element={<ViewEvent />} />
       </Routes>
       <Footer />
     </div>

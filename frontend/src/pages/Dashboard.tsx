@@ -20,8 +20,9 @@ interface Event {
   id: string;
   title: string;
   date: string;
+  time: string;
   location: string;
-  image?: string;
+  imageUrl?: string;
 }
 
 export default function DashboardPage() {
@@ -64,7 +65,7 @@ export default function DashboardPage() {
         setAllEvents(events);
         setUpcomingEvents(upcoming);
         setPastEvents(past);
-        setRecommendedEvents(events); // Placeholder: adjust as needed
+        setRecommendedEvents(events); 
 
       } catch (err: any) {
         console.error("Error fetching data:", err);
@@ -231,7 +232,7 @@ export default function DashboardPage() {
                   <Card key={event.id} className="overflow-hidden transition-all hover:shadow-lg">
                     <div className="aspect-video w-full overflow-hidden">
                       <img
-                        src={event.image || "/placeholder.svg"}
+                        src={event.imageUrl || "/placeholder.svg"}
                         alt={event.title}
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
@@ -246,7 +247,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground mb-2">
                         <Clock className="mr-2 h-4 w-4" />
-                        {formatEventTime(event.date)}
+                        {event.time}
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <MapPin className="mr-2 h-4 w-4" />
@@ -284,7 +285,7 @@ export default function DashboardPage() {
                   <Card key={event.id} className="overflow-hidden transition-all hover:shadow-lg">
                     <div className="aspect-video w-full overflow-hidden">
                       <img
-                        src={event.image || "/placeholder.svg"}
+                        src={event.imageUrl || "/placeholder.svg"}
                         alt={event.title}
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
@@ -331,7 +332,7 @@ export default function DashboardPage() {
                   <Card key={event.id} className="overflow-hidden transition-all hover:shadow-lg">
                     <div className="aspect-video w-full overflow-hidden">
                       <img
-                        src={event.image || "/placeholder.svg"}
+                        src={event.imageUrl || "/placeholder.svg"}
                         alt={event.title}
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
@@ -384,7 +385,7 @@ export default function DashboardPage() {
                   <Card key={event.id} className="overflow-hidden transition-all hover:shadow-lg">
                     <div className="aspect-video w-full overflow-hidden">
                       <img
-                        src={event.image || "/placeholder.svg"}
+                        src={event.imageUrl || "/placeholder.svg"}
                         alt={event.title}
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
