@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from '../lib/api';
 
 // Updated interfaces
@@ -22,17 +22,8 @@ interface FormData {
   additionalInfo: string;
 }
 
-interface CheckoutData {
-  eventId: string;
-  name: string;
-  email: string;
-  phone: string;
-  additionalInfo: string;
-}
-
 export default function EventRegistrationPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
