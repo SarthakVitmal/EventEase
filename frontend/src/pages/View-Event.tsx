@@ -81,6 +81,13 @@ export default function ViewEvent() {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
+  const handleRegister = () => {
+    // Handle registration logic here
+    console.log('Register button clicked');
+    // For now, just navigate back to the events page
+    window.location.href = `/dashboard/all-events/${id}/register`;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -247,7 +254,7 @@ export default function ViewEvent() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500 mb-4">Free admission</p>
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  <Button onClick={() => handleRegister()} className="w-full bg-purple-600 hover:bg-purple-700">
                     Register Now
                   </Button>
                 </div>

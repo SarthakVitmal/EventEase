@@ -1,4 +1,4 @@
-import createEvent, { getEventsByUser, getAllEvents, uploadEventImage, getEventById } from '../controllers/eventController.js';
+import createEvent, { getEventsByUser, getAllEvents, uploadEventImage, getEventById, eventRegistration } from '../controllers/eventController.js';
 import express from 'express';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import { upload } from '../cloudConfig.js';
@@ -19,4 +19,5 @@ router.post('/upload-image',
     uploadEventImage
 );
 router.get('/:id', getEventById);
+router.post('/:id/register', authenticateUser, eventRegistration);
 export default router;

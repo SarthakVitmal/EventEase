@@ -151,6 +151,9 @@ export default function DashboardPage() {
               <a href="/dashboard/create-event" className="text-sm font-medium text-muted-foreground hover:text-primary">
                 Create Event
               </a>
+              <a href="/dashboard/ticket-history" className="text-sm font-medium text-muted-foreground hover:text-primary">
+                Tickets
+              </a>
             </nav>
           </div>
           <div className="flex items-center gap-4">

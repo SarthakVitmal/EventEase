@@ -1,5 +1,7 @@
+import User from '../models/User.js';
 import Event from '../models/Event.js';
 import { uploadToCloudinary } from '../cloudConfig.js';
+import Participant from '../models/Participant.js';
 
 const createEvent = async(req, res) => {
     try {
@@ -285,6 +287,52 @@ export const getEventById = async(req, res) => {
     } catch (error) {
         console.error('Error fetching event:', error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const eventRegistration = async(req, res) => {
+    try {
+        const { eventId, userId, name, email, phone, additionalInfo } = req.body;
+
+        // Validate eventId
+        if (!eventId) {
+            return res.status(400).json({ error: 'Event ID is required' });
+        }
+
+        // Check if the event exists
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Create new participant
+        const participant = new Participant({
+            userId,
+            eventId: eventId,
+            name,
+            email,
+            phone,
+            additionalInfo
+        });
+
+        const user = await User.findById(userId);
+
+        // Save participant
+        await participant.save();
+
+        // Update user's events
+        if (user) {
+            user.events.push(eventId, );
+            await user.save();
+        }
+
+        res.status(201).json({
+            message: 'Registration successful',
+            participant
+        });
+    } catch (error) {
+        console.error('Error registering for event:', error);
+        res.status(500).json({ error: 'Failed to register for event' });
     }
 };
 export default createEvent;

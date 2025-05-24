@@ -1,22 +1,40 @@
-import mongoose from "mongoose";
-
+import mongoose from 'mongoose';
 const participantSchema = new mongoose.Schema({
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+        ref: 'User',
+        required: true
     },
-    event: {
+    eventId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Event",
-        required: true,
+        ref: 'Event',
+        required: true
     },
-    attended:{
-        type: Boolean,
-        default: false,
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email']
+    },
+    phone: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    additionalInfo: {
+        type: String,
+        trim: true
     },
     createdAt: {
         type: Date,
-        default: Date.now,
-    },
-    });
+        default: Date.now
+    }
+});
+const Participant = mongoose.model('Participant', participantSchema);
+
+export default Participant;
