@@ -57,6 +57,7 @@ export default function AllEventsPage() {
   const [sortBy, setSortBy] = useState("date-asc");
   const [dateFilter, setDateFilter] = useState<{ from?: Date; to?: Date }>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const fetchEvents = async () => {
     try {
@@ -85,6 +86,34 @@ export default function AllEventsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch user details
+        const userResponse = await api.get("/auth/getUser");
+        setUser(userResponse.data.user);
+
+      } catch (err: any) {
+        console.error("Error fetching data:", err);
+        if (err.response?.status === 401) {
+          setError("Unauthorized. Please log in again.");
+        } else {
+          setError(err.message || "Failed to load dashboard data.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if(!user) window.location.href = "/login";
+  })
 
   useEffect(() => {
     fetchEvents();

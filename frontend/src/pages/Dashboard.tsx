@@ -82,6 +82,10 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if(!user) window.location.href = "/login";
+  })
+
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout");
