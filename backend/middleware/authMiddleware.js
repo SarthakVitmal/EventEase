@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 
 export const authenticateUser = (req, res, next) => {
     // First try to get token from cookies
-    let token = req.cookies?.token;
-    
+    let token = req.cookies.token;
+    x
+
     // If not in cookies, try Authorization header
     if (!token && req.headers.authorization) {
         const authHeader = req.headers.authorization;
@@ -14,8 +15,7 @@ export const authenticateUser = (req, res, next) => {
     }
 
     if (!token) {
-        console.log('No token found in cookies or headers');
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.redirect('/login');
     }
 
     try {

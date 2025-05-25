@@ -37,6 +37,7 @@ export default function ViewEvent() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -63,6 +64,18 @@ export default function ViewEvent() {
     fetchEvent();
   }, [id]);
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const userResponse = await api.get("/auth/getUser");
+        setUserId(userResponse.data.user._id);
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      }
+    };
+    fetchUserId();
+  }, []);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -82,6 +95,11 @@ export default function ViewEvent() {
   };
 
   const handleRegister = () => {
+    if (!userId) {
+      alert('Please log in to register for the event.');
+      navigate('/login');
+      return;
+    }
     // Handle registration logic here
     console.log('Register button clicked');
     // For now, just navigate back to the events page
