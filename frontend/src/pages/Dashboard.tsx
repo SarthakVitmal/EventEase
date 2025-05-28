@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import api from "../lib/api";
+import {useAuth} from "../hooks/useAuth";
 
 interface User {
   username: string;
@@ -34,7 +35,11 @@ export default function DashboardPage() {
   const [recommendedEvents, setRecommendedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // const {user:currentUser, loading:currentLoading, error:currentError} = useAuth();
 
+  // if (currentLoading) return <div>Loading...</div>;
+  // if (currentError) return <div>{error}</div>;
+  // if (!currentUser) return "/login"; 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -82,9 +87,9 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if(!user) window.location.href = "/login";
-  })
+  // useEffect(() => {
+  //   if(!user) window.location.href = "/login";
+  // })
 
   const handleLogout = async () => {
     try {
@@ -262,7 +267,7 @@ export default function DashboardPage() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">
+                      <Button onClick={() => window.location.href = '/dashboard/manage-events'} variant="outline" className="w-full">
                         Manage
                       </Button>
                     </CardFooter>

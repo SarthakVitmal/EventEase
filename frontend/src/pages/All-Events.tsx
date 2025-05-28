@@ -111,9 +111,9 @@ export default function AllEventsPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if(!user) window.location.href = "/login";
-  })
+  // useEffect(() => {
+  //   if(!user) window.location.href = "/login";
+  // })
 
   useEffect(() => {
     fetchEvents();

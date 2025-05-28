@@ -18,6 +18,7 @@ import { Test } from './pages/Test';
 import AllEventsPage from './pages/All-Events';
 import EventRegistrationPage from './pages/Event-Registration';
 import TicketsPage from './pages/Tickets';
+import ManageEventsPage from './pages/Manage-Event';
 
 function AppContent() {
   const location = useLocation();
@@ -39,6 +40,7 @@ function AppContent() {
         <Route path="/dashboard/all-events/:id" element={<ViewEvent />} />
         <Route path="/dashboard/all-events/:id/register" element={<EventRegistrationPage />} />
         <Route path="/dashboard/ticket-history" element={<TicketsPage />} />
+        <Route path="/dashboard/manage-events" element={<ManageEventsPage />} />
       </Routes>
       <Footer />
     </div>
