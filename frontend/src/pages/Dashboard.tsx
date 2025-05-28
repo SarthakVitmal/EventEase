@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import api from "../lib/api";
-import {useAuth} from "../hooks/useAuth";
 
 interface User {
   username: string;
