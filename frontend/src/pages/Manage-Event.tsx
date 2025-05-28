@@ -20,7 +20,7 @@ interface Event {
   category: string;
   capacity: number;
   price: number;
-  isPublished: boolean;
+  status: string;
 }
 
 export default function ManageEventsPage() {
@@ -153,8 +153,8 @@ export default function ManageEventsPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle>{event.title}</CardTitle>
-                      <span className={`px-2 py-1 text-xs rounded-full ${event.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                        {event.isPublished ? 'Published' : 'Draft'}
+                      <span className={`px-2 py-1 text-xs rounded-full ${event.status == 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {event.status ==  'published'? "Published" : 'Draft'}
                       </span>
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground mt-1">
